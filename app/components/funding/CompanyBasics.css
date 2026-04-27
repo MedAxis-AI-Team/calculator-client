@@ -1,0 +1,23 @@
+.company-basics {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 20px;
+  border: 1.5px solid var(--color-gray-light);
+}
+
+.company-basics__title {
+  font-size: 16px;
+  margin-bottom: 16px;
+  color: var(--color-dark);
+}
+
+.company-basics__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+}
+
+@media (max-width: 480px) {
+  .company-basics__grid { grid-template-columns: 1fr; }
+}

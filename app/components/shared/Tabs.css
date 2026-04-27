@@ -1,0 +1,24 @@
+.tabs {
+  display: flex;
+  border-bottom: 2px solid var(--color-gray-light);
+  margin-bottom: 28px;
+  gap: 4px;
+}
+
+.tabs__item {
+  padding: 10px 20px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-text);
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tabs__item:hover { color: var(--color-dark); }
+
+.tabs__item--active {
+  color: var(--color-teal);
+  border-bottom-color: var(--color-teal);
+  font-weight: 600;
+}

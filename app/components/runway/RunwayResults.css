@@ -1,0 +1,10 @@
+.runway-results__primary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+  margin-bottom: var(--gap);
+}
+
+@media (max-width: 480px) {
+  .runway-results__primary { grid-template-columns: 1fr; }
+}

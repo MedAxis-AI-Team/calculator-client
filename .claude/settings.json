@@ -6,7 +6,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node -e \"const f=process.env.CLAUDE_TOOL_OUTPUT_FILE||'';if(/\\.(jsx?|css)$/.test(f)){const c=require('fs').readFileSync(f,'utf8');if(c.includes('console.log'))process.stderr.write('\\u26a0  console.log found in '+f+'\\n')}\" 2>&1 || true"
+            "command": "bash .claude/hooks/post-edit.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/stop-audit.sh"
           }
         ]
       }
@@ -17,6 +27,8 @@
       "Bash(npm run dev*)",
       "Bash(npm run build*)",
       "Bash(npm run lint*)",
+      "Bash(npm run test*)",
+      "Bash(npm run typecheck*)",
       "Bash(npm install *)",
       "Bash(git status*)",
       "Bash(git diff*)",
@@ -31,7 +43,9 @@
       "Bash(find *)",
       "Bash(grep *)",
       "Bash(mkdir *)",
-      "Bash(cat *)"
+      "Bash(cat *)",
+      "Bash(node *)",
+      "Bash(bash .claude/hooks/*)"
     ]
   }
 }

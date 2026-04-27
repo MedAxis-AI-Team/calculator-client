@@ -1,5 +1,5 @@
 # ADR-001: Tech Stack — MedAxis AI Funding Mix Calculator
-## Status: Accepted
+## Status: Superseded (partially) by ADR-002
 ## Date: April 24, 2026
 ## Author: Jerome
 ## Reviewed against: Build Spec v3, Gap Analysis (April 24, 2026)
@@ -403,6 +403,6 @@ export default posthog
 4. Add hand-rolled SVG runway chart → no new library; pure SVG paths from
    runway calculation output
 5. Add TypeScript → pure functions in `calculations.js` have clean signatures;
-   migration is mechanical file-by-file
+   migration is mechanical file-by-file (**done in v1 — see ADR-002**)
 6. Add SAFE/note conversion drawer → new modal, new pure functions
 7. Add option pool modeling → new fields in state, new calculations

@@ -1,65 +1,191 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useReducer, useEffect, useRef, useCallback } from 'react'
+import { usePostHog } from 'posthog-js/react'
+
+import type { AppAction, ActiveTab, Currency } from './lib/types'
+import Tabs from './components/shared/Tabs'
+import CurrencySelector from './components/shared/CurrencySelector'
+import FundingMixTab from './components/funding/FundingMixTab'
+import RunwayTab from './components/runway/RunwayTab'
+import FooterCTA from './components/layout/FooterCTA'
+
+import { reducer, INITIAL_STATE } from './lib/reducer'
+import { parseSharedState, encodeState } from './lib/validators'
+import { aggregateSources, calculateFundingMix, calculateRunway, generateCopySummary } from './lib/calculations'
+import './page.css'
+
+export default function CalculatorPage() {
+  const [state, dispatch] = useReducer(reducer, INITIAL_STATE)
+  const posthog = usePostHog()
+  const loadTimeRef = useRef(Date.now())
+  const timeOnPageFiredRef = useRef(false)
+  const interactionCountRef = useRef(0)
+  const interactionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const resultsRef = useRef<HTMLDivElement>(null)
+  const isResultsInViewRef = useRef(false)
+  const hasTrackedResultsViewRef = useRef(false)
+
+  useEffect(() => {
+    const raw = new URLSearchParams(window.location.search).get('model')
+    if (raw) {
+      const parsed = parseSharedState(raw)
+      if (parsed) dispatch({ type: 'HYDRATE_FROM_URL', state: parsed })
+    }
+  }, [])
+
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('model', encodeState(state))
+    window.history.replaceState(null, '', url.toString())
+  }, [state])
+
+  useEffect(() => {
+    return () => { if (interactionTimerRef.current) clearTimeout(interactionTimerRef.current) }
+  }, [])
+
+  useEffect(() => {
+    if (!resultsRef.current) return
+    const observer = new IntersectionObserver(
+      ([entry]) => { isResultsInViewRef.current = entry.isIntersecting },
+      { threshold: 0.5 },
+    )
+    observer.observe(resultsRef.current)
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (hasTrackedResultsViewRef.current) return
+    if (!isResultsInViewRef.current) return
+    if (interactionCountRef.current === 0) return
+    hasTrackedResultsViewRef.current = true
+    const buckets = aggregateSources(state.fundingSources)
+    posthog?.capture('results_viewed', {
+      active_tab: state.activeTab,
+      source_count: state.fundingSources.length,
+      priced_equity_amount: buckets.priced_equity,
+      grant_like_amount: buckets.grant_like,
+    })
+  }, [posthog, state])
+
+  useEffect(() => {
+    function fireTimeOnPage() {
+      if (timeOnPageFiredRef.current) return
+      timeOnPageFiredRef.current = true
+      posthog?.capture('time_on_page', {
+        seconds_on_page: Math.round((Date.now() - loadTimeRef.current) / 1000),
+      })
+    }
+    const onVisibility = () => { if (document.visibilityState === 'hidden') fireTimeOnPage() }
+    document.addEventListener('visibilitychange', onVisibility)
+    window.addEventListener('beforeunload', fireTimeOnPage)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('beforeunload', fireTimeOnPage)
+    }
+  }, [posthog])
+
+  const trackedDispatch = useCallback((action: AppAction) => {
+    dispatch(action)
+    const trackable: AppAction['type'][] = ['SET_COMPANY_FIELD', 'UPDATE_SOURCE', 'SET_RUNWAY_FIELD', 'SET_CURRENCY']
+    if (!trackable.includes(action.type)) return
+    interactionCountRef.current += 1
+    if (interactionCountRef.current <= 1) return
+    if (interactionTimerRef.current) clearTimeout(interactionTimerRef.current)
+    interactionTimerRef.current = setTimeout(() => {
+      const field = 'field' in action ? String(action.field) : action.type
+      posthog?.capture('calculator_interaction', {
+        active_tab: state.activeTab,
+        input_field: field,
+        source_count: state.fundingSources.length,
+      })
+    }, 800)
+  }, [posthog, state.activeTab, state.fundingSources.length])
+
+  function handleTabSwitch(tab: ActiveTab) {
+    dispatch({ type: 'SET_ACTIVE_TAB', tab })
+    posthog?.capture('tab_switch', { tab })
+  }
+
+  function handleLoadExample() {
+    posthog?.capture('load_example_click', { example: 'typical_early_stage' })
+    if (state.fundingSources.length > 0) {
+      if (!window.confirm('This will overwrite your current numbers with the example scenario. Continue?')) return
+    }
+    dispatch({ type: 'LOAD_EXAMPLE' })
+  }
+
+  async function handleShare() {
+    const buckets = aggregateSources(state.fundingSources)
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      posthog?.capture('share_click', {
+        active_tab: state.activeTab,
+        source_count: state.fundingSources.length,
+        has_safe_note: buckets.safe_note_estimate > 0,
+        has_pending_award: state.runway.pendingAwardAmount > 0,
+      })
+    } catch {
+      window.prompt('Copy this URL to share:', window.location.href)
+    }
+  }
+
+  async function handleCopySummary() {
+    const buckets = aggregateSources(state.fundingSources)
+    const mix = calculateFundingMix(state.company, buckets)
+    const runway = calculateRunway(state.runway)
+    const text = generateCopySummary(state.company, buckets, mix, runway, window.location.href)
+    try {
+      await navigator.clipboard.writeText(text)
+      posthog?.capture('copy_summary_click', {
+        active_tab: state.activeTab,
+        includes_runway: !runway?.error,
+        has_safe_note: buckets.safe_note_estimate > 0,
+      })
+    } catch {
+      window.prompt('Copy this summary:', text)
+    }
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <>
+      <header className="site-header">
+        <span className="site-header__wordmark">MedAxis<span> AI</span></span>
+        <CurrencySelector
+          currency={state.currency}
+          onChange={(c: Currency) => trackedDispatch({ type: 'SET_CURRENCY', currency: c })}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+      </header>
+
+      <main className="page-wrap">
+        <div className="hero">
+          <h1 className="hero__title">Life Sciences Funding Mix Calculator</h1>
+          <p className="hero__sub">
+            A free calculator built for life sciences founders combining grants, tax credits, and equity.
+          </p>
+          <p className="hero__disclaimer">
+            For strategic planning only — not legal or financial advice. Supports US, Canadian, UK, and European non-equity funding contexts.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="page-actions">
+          <button className="page-actions__btn" onClick={handleShare}>Share URL</button>
+          <button className="page-actions__btn" onClick={handleCopySummary}>Copy Summary</button>
         </div>
+
+        <Tabs activeTab={state.activeTab} onSwitch={handleTabSwitch} />
+
+        <div ref={resultsRef}>
+          {state.activeTab === 'funding_mix' && (
+            <FundingMixTab state={state} dispatch={trackedDispatch} onLoadExample={handleLoadExample} />
+          )}
+          {state.activeTab === 'runway' && (
+            <RunwayTab state={state} dispatch={trackedDispatch} />
+          )}
+        </div>
+
+        <FooterCTA />
       </main>
-    </div>
-  );
+    </>
+  )
 }

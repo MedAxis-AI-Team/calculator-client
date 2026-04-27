@@ -1,0 +1,43 @@
+.runway-inputs {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 20px;
+  border: 1.5px solid var(--color-gray-light);
+}
+
+.runway-inputs__title {
+  font-size: 16px;
+  margin-bottom: 16px;
+  color: var(--color-dark);
+}
+
+.runway-inputs__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+  margin-bottom: 20px;
+}
+
+.runway-inputs__award {
+  padding-top: 20px;
+  border-top: 1.5px solid var(--color-gray-light);
+}
+
+.runway-inputs__award-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-dark);
+  margin-bottom: 12px;
+}
+
+.runway-inputs__award-note {
+  font-size: 12px;
+  color: var(--color-text);
+  font-style: italic;
+  margin-top: 10px;
+}
+
+@media (max-width: 480px) {
+  .runway-inputs__grid { grid-template-columns: 1fr; }
+}

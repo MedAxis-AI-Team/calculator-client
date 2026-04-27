@@ -1,0 +1,22 @@
+.page-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  justify-content: flex-end;
+}
+
+.page-actions__btn {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text);
+  padding: 6px 14px;
+  border: 1.5px solid var(--color-gray-light);
+  border-radius: var(--radius);
+  background: var(--color-white);
+  transition: border-color 0.12s, color 0.12s;
+}
+
+.page-actions__btn:hover {
+  border-color: var(--color-teal);
+  color: var(--color-teal);
+}

@@ -1,0 +1,38 @@
+.footer-cta {
+  margin-top: 48px;
+  padding: 28px 24px;
+  background: var(--color-teal-light);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--color-teal);
+  text-align: center;
+}
+
+.footer-cta__line {
+  font-size: 14px;
+  color: var(--color-dark);
+  margin-bottom: 12px;
+}
+
+.footer-cta__link {
+  display: inline-block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-teal);
+  padding: 10px 24px;
+  border: 2px solid var(--color-teal);
+  border-radius: var(--radius);
+  transition: background 0.15s, color 0.15s;
+  margin-bottom: 16px;
+}
+
+.footer-cta__link:hover {
+  background: var(--color-teal);
+  color: var(--color-white);
+  text-decoration: none;
+}
+
+.footer-cta__legal {
+  font-size: 11px;
+  color: var(--color-text);
+  line-height: 1.6;
+}

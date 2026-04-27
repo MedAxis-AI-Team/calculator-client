@@ -1,36 +1,119 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MedAxis AI — Funding Mix Calculator
 
-## Getting Started
+A free, client-side calculator for life sciences founders modeling grants, tax credits, SAFE notes, and equity in a single raise. Live at [calculator.medaxisai.org](https://calculator.medaxisai.org).
 
-First, run the development server:
+**Funding Mix tab** — dilution from priced equity, founder ownership preserved by non-dilutive capital, SAFE/note secondary estimate, stacked bar breakdown.
+
+**Runway tab** — cash-out date, capital needed to 18 and 24 months, pending award scenarios (on-schedule, cash-out-before-award, timing uncertain).
+
+All math is client-side. No backend, no data collection beyond PostHog analytics.
+
+## Prerequisites
+
+- Node.js ≥ 20
+- Docker (optional — for containerized local run)
+
+## Local setup
 
 ```bash
+cp .env.example .env.local
+# Fill in your PostHog key — see Environment variables below
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+For E2E tests, install Playwright browsers once after `npm install`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npx playwright install --with-deps chromium
+```
 
-## Learn More
+Or use `make install` which does both steps.
 
-To learn more about Next.js, take a look at the following resources:
+## Commands
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The `Makefile` is the primary interface. All targets are documented via `make help`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Make target | npm equivalent | What it does |
+|---|---|---|
+| `make dev` | `npm run dev` | Next.js dev server |
+| `make build` | `npm run build` | Typecheck → static export to `out/` |
+| `make serve` | `npm start` | Serve `out/` locally on port 3000 |
+| `make lint` | `npm run lint` | ESLint |
+| `make format` | — | ESLint with `--fix` |
+| `make typecheck` | `npm run typecheck` | TypeScript check, no emit |
+| `make test` | `npm run test` | Unit + component tests (Vitest) |
+| `make test-watch` | `npm run test:watch` | Vitest interactive watch |
+| `make test-coverage` | `npm run test:coverage` | Coverage report (≥90% lines required) |
+| `make test-e2e` | `npm run test:e2e` | Playwright E2E (builds first) |
+| `make test-all` | — | Full quality gate: lint → typecheck → test → coverage → smoke |
+| `make smoke` | `npm run smoke` | Post-build output checks (builds first) |
+| `make docker-build` | — | Build Docker image |
+| `make docker-up` | — | Start container via Docker Compose |
+| `make docker-run` | — | Build and run without Compose |
+| `make clean` | — | Delete `out/`, `.next/`, `coverage/` |
 
-## Deploy on Vercel
+## Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Next.js 16** + **React 19** — `output: 'export'` (fully static, no server)
+- **TypeScript** strict mode — discriminated unions for all calculation results
+- **Plain CSS** with custom properties — no Tailwind, all brand tokens in `app/globals.css`
+- **Single `useReducer`** in `app/page.tsx` — no external state library
+- **PostHog** — 8 analytics events pre-configured (project 374629)
+- **Vitest** — unit and component tests; **Playwright** — E2E
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project structure
+
+```
+app/
+  components/
+    shared/    CurrencyInput, PercentInput, ResultCard, Tabs, CurrencySelector
+    funding/   FundingMixTab, CompanyBasics, FundingSourceRow, FundingSourcesList, FundingResults, StackedBar
+    runway/    RunwayTab, RunwayInputs, RunwayResults
+    layout/    PostHogProvider, FooterCTA
+  lib/
+    calculations.ts   Pure math — aggregateSources, calculateFundingMix, calculateRunway
+    formatters.ts     Display formatting — currency, percent, months
+    validators.ts     URL state encode/decode with full validation
+    reducer.ts        useReducer actions and INITIAL_STATE
+    types.ts          All shared TypeScript types
+    __tests__/        Unit, integration, and component tests
+  page.tsx            Root — useReducer, PostHog events, URL sync
+  globals.css         Brand tokens and global styles
+e2e/                  Playwright specs
+scripts/
+  smoke-build.sh      Post-build assertions (run via make smoke)
+docs/adr/             Architecture Decision Records
+```
+
+## Environment variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `NEXT_PUBLIC_POSTHOG_KEY` | Yes | PostHog project API key (public, safe to expose) |
+| `NEXT_PUBLIC_POSTHOG_HOST` | Yes | PostHog ingest host — `https://us.i.posthog.com` for US region |
+
+Set these in `.env.local` for local development. For Vercel, set them in the dashboard under the `team_x0oXPcGcruiBSXuzeq18CL5v` team.
+
+## Deploy
+
+Deployed on Vercel as a static site. `vercel.json` sets security headers and the output directory. No `framework` field — Vercel treats it as a plain static export.
+
+```bash
+# Manual deploy (Vercel CLI)
+vercel --prod
+```
+
+DNS: `calculator.medaxisai.org` is live and pointing to the Vercel deployment.
+
+## Docker (optional)
+
+```bash
+make docker-up          # build image + start on port 3000
+make docker-run         # same without Compose
+make docker-run PORT=8080
+```
+
+Pass PostHog credentials via `.env.local` or shell environment — Docker Compose reads them automatically.

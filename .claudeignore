@@ -1,9 +1,15 @@
 # Token optimization — excluded from auto-context
 .next/
+out/
 node_modules/
 public/
 *.lock
 package-lock.json
+coverage/
+*.snap
 
 # Large spec loaded on-demand via /tasks
 context/001/FINAL-funding-mix-calculator-build-spec.md
+
+# Docker build artifacts (not source)
+.dockerignore

@@ -1,80 +1,99 @@
-Read context/001/pacing.md and context/001/FINAL-funding-mix-calculator-build-spec.md (sections on component structure, PostHog events, and QA sanity checks). Then inspect the current state of the app/ directory to determine what exists vs. what is still a stub.
+Read context/001/FINAL-funding-mix-calculator-build-spec.md (full document).
+Read CLAUDE.md for current stack conventions.
+Inspect the actual file state to determine done vs. not-done — mark [x] only if the file exists AND contains real implementation (not placeholder or stub content):
 
-Output a Markdown task checklist organized by build phase. For each phase:
-- Show the phase name, step number (from pacing.md), and estimated time
-- List each sub-task as a checkbox: `[ ]` not started, `[x]` done
-- Mark a task done only if the corresponding file/component exists and contains real implementation (not Create Next App default content)
+Files to check:
+- app/lib/calculations.ts, formatters.ts, validators.ts, types.ts, posthog.ts
+- app/components/shared/ (CurrencyInput, PercentInput, ResultCard, Tabs, CurrencySelector)
+- app/components/funding/ (FundingMixTab, CompanyBasics, FundingSourceRow, FundingSourcesList, FundingResults, StackedBar)
+- app/components/runway/ (RunwayTab, RunwayInputs, RunwayResults)
+- app/components/layout/ (PostHogProvider, FooterCTA)
+- app/page.tsx, app/layout.tsx, app/globals.css, app/page.css
+- next.config.js, vercel.json, .env.example, .nvmrc, .npmrc, Dockerfile
+- app/lib/__tests__/ (calculations, formatters, validators, reducer, smoke)
+- app/components/__tests__/ (FundingResults, RunwayResults)
+- e2e/ (funding-mix.spec.ts, url-roundtrip.spec.ts)
+- scripts/smoke-build.sh
 
----
+Output a Markdown task checklist organized by phase:
 
 ## Phase 0 — Project Setup
-- [ ] Install posthog-js, @posthog/react, react-number-format
-- [ ] Create .env.local with NEXT_PUBLIC_POSTHOG_KEY and NEXT_PUBLIC_POSTHOG_HOST
-- [ ] Set next.config.js to `output: 'export'` and remove reactCompiler (plain JS project)
-- [ ] Create src/lib/posthog.js with PostHog init
+- [ ] posthog-js, @posthog/react, react-number-format installed
+- [ ] .env.local exists with NEXT_PUBLIC_POSTHOG_KEY and NEXT_PUBLIC_POSTHOG_HOST
+- [ ] next.config.js has `output: 'export'`, trailingSlash: true, images.unoptimized: true
+- [ ] .nvmrc (node 20), .npmrc (engine-strict=true), .env.example present
 
-## Phase 1 — Layout + Branding (30 min)
-- [ ] Replace app/globals.css with brand CSS custom properties (--color-teal, --color-dark, --color-amber, etc.)
-- [ ] Add Prata + Inter via Google Fonts in app/layout.jsx
-- [ ] Create app/layout.jsx (replace layout.tsx stub) with header, footer, CTA link
-- [ ] Confirm calculator.medaxisai.org header logo/wordmark matches branding.md
+## Phase 1 — Layout + Branding
+- [ ] app/globals.css has all brand tokens (--color-teal, --color-dark, --color-amber, etc.)
+- [ ] Prata + Inter loaded in app/layout.tsx
+- [ ] Site header with wordmark and nav tabs
+- [ ] FooterCTA component with cta_click event
 
-## Phase 2 — Funding Sources UI (60 min)
-- [ ] Create src/lib/calculations.js (copy from context/001/calculations.js)
-- [ ] Create src/lib/formatters.js (extract formatCurrency, formatPct, formatMonths, getCurrencySymbol)
-- [ ] Create src/lib/validators.js with parseSharedState()
-- [ ] Create app/page.jsx with useReducer + initial state + all action types
-- [ ] Create FundingSourceRow component (type dropdown, amount input, remove button)
-- [ ] Wire "Add funding source" button with ADD_SOURCE dispatch
-- [ ] Wire "Load typical early-stage example" button with LOAD_EXAMPLE dispatch + window.confirm guard
-- [ ] Add all 7 source type dropdown options with tooltips
+## Phase 2 — Funding Sources UI
+- [ ] FundingSourceRow with type dropdown (7 options) + amount input + remove button
+- [ ] FundingSourcesList renders list + "Add funding source" button
+- [ ] ADD_SOURCE, REMOVE_SOURCE, UPDATE_SOURCE dispatches wired
+- [ ] LOAD_EXAMPLE with window.confirm guard
 
-## Phase 3 — Company Basics (30 min)
-- [ ] Pre-money valuation input (NumericFormat, default $8M)
-- [ ] Founder ownership % input (NumericFormat, default 75%, clamped [0,100])
-- [ ] Currency selector [USD | CAD | EUR | GBP] — display only, SET_CURRENCY dispatch
+## Phase 3 — Company Basics
+- [ ] preMoney input (NumericFormat, default $8M)
+- [ ] founderOwnershipPct input (NumericFormat, 0-100 clamped, default 75%)
+- [ ] CurrencySelector [USD | CAD | EUR | GBP] with SET_CURRENCY dispatch
 
 ## Phase 4 — Share URL + Copy Summary
-- [ ] Encode state → base64url on every state change, write to ?model= param
-- [ ] Decode ?model= on page load, run parseSharedState(), dispatch HYDRATE_FROM_URL
-- [ ] Copy summary button → generateCopySummary() → clipboard
-- [ ] Share button → copy current URL to clipboard
+- [ ] encodeState encodes state to base64 on every change
+- [ ] parseSharedState validates and decodes URL param
+- [ ] Share button copies URL to clipboard, fires share_click event
+- [ ] Copy Summary button calls generateCopySummary(), fires copy_summary_click event
 
-## Phase 5 — Stacked Bar + Result Cards (FundingMixTab complete, 90 min)
-- [ ] CSS stacked bar: 3 segments (Amber priced equity / light Amber SAFE/note / Teal non-dilutive)
-- [ ] Hide $0 segments; mobile legend fallback at <480px
-- [ ] Primary ownership card: actual founder % after priced equity dilution only
-- [ ] Ownership preserved card: pts saved vs. all-equity scenario + illustrative value
-- [ ] SAFE/note secondary card (shown only when safe_note_estimate > 0)
+## Phase 5 — Stacked Bar + Result Cards
+- [ ] StackedBar 3-segment CSS flex (amber / amber-light / teal), hides $0 segments
+- [ ] Founder ownership card (post-round % + dilution sub)
+- [ ] Ownership preserved card (pts + illustrativeValuePreserved)
 - [ ] Non-dilutive share % card
-- [ ] Handle NO_PRE_MONEY and no-sources edge cases with appropriate empty states
+- [ ] SAFE/note secondary card (shown only when hasSafeNote true)
+- [ ] NO_PRE_MONEY empty state handled
+- [ ] No-sources empty state handled
 
-## Phase 6 — Runway Tab (90 min)
-- [ ] Cash on hand input, monthly burn input, monthly inflows input (all NumericFormat)
-- [ ] Pending award amount + timing dropdown (1-3 mo, 3-6 mo, 6-12 mo, uncertain)
-- [ ] Primary runway display: currentRunwayMonths + cashOutDate
-- [ ] Capital needed to 18 months and 24 months
-- [ ] Award scenario card: AWARD_ON_SCHEDULE, TIMING_UNCERTAIN
-- [ ] CASH_OUT_BEFORE_AWARD warning with bridgeNeeded amount
-- [ ] NET_BURN_NOT_POSITIVE edge case: "Runway not limited" message
+## Phase 6 — Runway Tab
+- [ ] Cash on hand, monthly burn, monthly inflows inputs (NumericFormat)
+- [ ] Pending award amount + timing dropdown (1-3, 3-6, 6-12, uncertain)
+- [ ] Primary runway: currentRunwayMonths + cashOutDate
+- [ ] Capital to 18 months and 24 months cards
+- [ ] AWARD_ON_SCHEDULE scenario card
+- [ ] CASH_OUT_BEFORE_AWARD warning card with bridgeNeeded
+- [ ] TIMING_UNCERTAIN card
+- [ ] NET_BURN_NOT_POSITIVE: "Runway not limited" message
 
 ## Phase 7 — PostHog Events (8 events)
-- [ ] calculator_loaded (on mount)
-- [ ] tab_switched (activeTab)
-- [ ] source_added (type)
-- [ ] source_removed (type)
-- [ ] load_example_click
-- [ ] share_click
-- [ ] copy_summary_click
-- [ ] currency_changed (currency)
+- [ ] tab_switch — fires on tab change, payload: { tab }
+- [ ] load_example_click — fires on button click (before confirm), payload: { example }
+- [ ] share_click — fires after clipboard write, payload: { active_tab, source_count, has_safe_note, has_pending_award }
+- [ ] copy_summary_click — fires after clipboard write, payload: { active_tab, includes_runway, has_safe_note }
+- [ ] cta_click — fires on FooterCTA click, payload: { destination: 'ii_landing' }
+- [ ] results_viewed — IntersectionObserver ≥50% + first interaction, payload: { active_tab, source_count, priced_equity_amount, grant_like_amount }
+- [ ] time_on_page — visibilitychange + beforeunload, payload: { seconds_on_page }, fires once
+- [ ] calculator_interaction — debounced 800ms after first change, payload: { active_tab, input_field, source_count }
 
 ## Phase 8 — Polish + Deploy
-- [ ] Run all 6 QA sanity checks from spec (exact expected outputs match)
-- [ ] Mobile layout verified at 375px and 428px
-- [ ] Static export builds without error (`npm run build`)
-- [ ] Deployed to calculator.medaxisai.org (Vercel team_x0oXPcGcruiBSXuzeq18CL5v)
-- [ ] PostHog dashboard 1473999 receiving events
+- [ ] All 7 QA sanity checks pass (npm run test covers scenarios A-G)
+- [ ] npm run build completes without TypeScript errors
+- [ ] npm run smoke passes all 7 build output checks
+- [ ] vercel.json configured (no framework field, headers set)
+- [ ] Dockerfile + docker-compose.yml present
+
+## Phase 9 — Tests
+- [ ] Unit: calculations.test.ts (7 QA scenarios + edge cases)
+- [ ] Unit: formatters.test.ts
+- [ ] Unit: validators.test.ts (URL round-trip)
+- [ ] Unit: reducer.test.ts (all action types)
+- [ ] Integration: smoke.test.ts (4 cross-module scenarios)
+- [ ] Component: FundingResults.test.tsx (NO_PRE_MONEY, valid mix, no SAFE card)
+- [ ] Component: RunwayResults.test.tsx (NET_BURN_NOT_POSITIVE, valid result, CASH_OUT_BEFORE_AWARD)
+- [ ] E2E: e2e/funding-mix.spec.ts (Playwright)
+- [ ] E2E: e2e/url-roundtrip.spec.ts (Playwright)
+- [ ] Coverage: npm run test:coverage ≥ 90% lines in app/lib/
 
 ---
 
-After the checklist: show `X / Y tasks complete` and the **next recommended task** (the first unchecked item in the lowest incomplete phase).
+After the checklist: show **X / Y tasks complete** and the **next recommended task** (first unchecked item in the lowest incomplete phase).

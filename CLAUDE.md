@@ -5,18 +5,25 @@
 Standalone Next.js 16 calculator at calculator.medaxisai.org.
 Two tabs: Funding Mix and Runway. All math is client-side, no backend.
 
-## Stack (locked — see docs/adr/ADR-001-tech-stack.md)
+## Stack (see docs/adr/ADR-001-tech-stack.md + ADR-002)
 - Framework: Next.js 16 + React 19, `output: 'export'` (static)
-- Files: `.jsx` not `.tsx` — no TypeScript in v1
+- Files: `.tsx` / `.ts` — TypeScript strict mode (ADR-002 overrides ADR-001's jsx-only constraint)
 - Styling: Plain CSS + CSS custom properties — no Tailwind in implementation
-- State: single `useReducer` in app/page.jsx
+- State: single `useReducer` in app/page.tsx
 - Runtime deps: posthog-js, @posthog/react, react-number-format (only additions)
+- Components: `app/components/shared/`, `funding/`, `runway/`, `layout/`
 
 ## Key References
 - Build spec: context/001/FINAL-funding-mix-calculator-build-spec.md
 - Calculations reference: context/001/calculations.js
 - Brand tokens: context/001/branding.md
 - ADR: docs/adr/ADR-001-tech-stack.md
+
+## Scripts
+- `npm run dev` — local dev server
+- `npm run build` — static export to `out/`
+- `npm run typecheck` — tsc --noEmit
+- `npm run test` — Vitest (7 QA scenarios)
 
 ## Slash Commands
 - `/tasks` — build progress checklist (Phase 0–8)
