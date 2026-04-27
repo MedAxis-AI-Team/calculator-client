@@ -1,6 +1,7 @@
 'use client'
 
 import { useReducer, useEffect, useRef, useCallback, useState } from 'react'
+import Image from 'next/image'
 import { usePostHog } from 'posthog-js/react'
 
 import type { AppAction, ActiveTab, Currency } from './lib/types'
@@ -18,7 +19,7 @@ import './page.css'
 export default function CalculatorPage() {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE)
   const posthog = usePostHog()
-  const loadTimeRef = useRef(Date.now())
+  const loadTimeRef = useRef<number>(0)
   const timeOnPageFiredRef = useRef(false)
   const interactionCountRef = useRef(0)
   const interactionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -26,6 +27,10 @@ export default function CalculatorPage() {
   const isResultsInViewRef = useRef(false)
   const hasTrackedResultsViewRef = useRef(false)
   const [copiedBtn, setCopiedBtn] = useState<'share' | 'summary' | null>(null)
+
+  useEffect(() => {
+    loadTimeRef.current = Date.now()
+  }, [])
 
   useEffect(() => {
     const raw = new URLSearchParams(window.location.search).get('model')
@@ -156,7 +161,7 @@ export default function CalculatorPage() {
     <>
       <header className="site-header">
         <a href="https://medaxisai.org" className="site-header__logo-link" aria-label="MedAxis AI">
-          <img src="/md.png" alt="MedAxis AI" className="site-header__logo" />
+          <Image src="/md.png" alt="MedAxis AI" width={32} height={32} className="site-header__logo" />
         </a>
         <CurrencySelector
           currency={state.currency}
