@@ -29,8 +29,14 @@ export default function RunwayResults({ result, currency }: Props) {
         <ResultCard
           label="Current runway"
           value={formatMonths(result.currentRunwayMonths)}
-          sub={`Cash out approx. ${formatDate(result.cashOutDate)}`}
         />
+        {result.awardScenario && <AwardScenarioCard scenario={result.awardScenario} currency={currency} />}
+        {result.cashOutDate && (
+          <ResultCard
+            label="Estimated cash-out"
+            value={formatDate(result.cashOutDate)}
+          />
+        )}
         <ResultCard
           label="Capital needed — 18 months"
           value={formatCurrency(result.capitalTo18Months, currency)}
@@ -42,7 +48,12 @@ export default function RunwayResults({ result, currency }: Props) {
           sub="Includes pending award if on-schedule"
         />
       </div>
-      {result.awardScenario && <AwardScenarioCard scenario={result.awardScenario} currency={currency} />}
+      <p className="runway-results__formula">
+        Runway = cash / (burn - inflows). Pending awards are modeled as cash received on the midpoint of your selected window.
+      </p>
+      <p className="runway-results__milestone">
+        Use this to estimate whether your capital mix reaches your next regulatory, clinical, technical, or commercial milestone (e.g., Pre-IND / CTA, CE Mark or Health Canada submission, pilot readout, pivotal study, Phase 1/2 data).
+      </p>
     </section>
   )
 }

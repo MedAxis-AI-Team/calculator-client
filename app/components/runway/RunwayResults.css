@@ -8,3 +8,12 @@
 @media (max-width: 480px) {
   .runway-results__primary { grid-template-columns: 1fr; }
 }
+
+.runway-results__formula,
+.runway-results__milestone {
+  font-size: 0.75rem;
+  color: var(--color-text);
+  font-style: italic;
+  margin-top: 0.5rem;
+  line-height: 1.5;
+}
