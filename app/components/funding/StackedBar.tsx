@@ -1,5 +1,6 @@
 import type { SourceBuckets, Currency } from '../../lib/types'
 import { formatCurrency } from '../../lib/formatters'
+import { useMobile } from '../../hooks'
 import './StackedBar.css'
 
 interface Props {
@@ -15,6 +16,7 @@ interface Segment {
 }
 
 export default function StackedBar({ buckets, currency }: Props) {
+  const isMobile = useMobile()
   const total = buckets.totalCapitalRaised
   if (total <= 0) return null
 
@@ -42,7 +44,7 @@ export default function StackedBar({ buckets, currency }: Props) {
         {segments.map(s => (
           <span key={s.key} className={`stacked-bar__legend-item stacked-bar__legend-item--${s.color}`}>
             <span className="stacked-bar__dot" />
-            {s.label}: {formatCurrency(s.amount, currency)}
+            {isMobile ? s.label : `${s.label}: ${formatCurrency(s.amount, currency)}`}
           </span>
         ))}
       </div>

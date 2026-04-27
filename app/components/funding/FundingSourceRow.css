@@ -54,7 +54,18 @@
 
 .source-row__remove:hover { background: var(--color-error-light); color: var(--color-error); }
 
-@media (max-width: 480px) {
-  .source-row { grid-template-columns: 1fr 36px; }
-  .source-row__amount { display: none; }
+.source-row--mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.source-row__mobile-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.source-row__mobile-row .source-row__amount {
+  flex: 1;
 }
