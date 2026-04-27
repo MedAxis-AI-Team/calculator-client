@@ -1,4 +1,5 @@
-import type { FundingSource, Company, RunwayState, SourceBuckets, FundingMixResult, RunwayResult, AwardScenario } from './types'
+import type { FundingSource, Company, RunwayState, SourceBuckets, FundingMixResult, RunwayResult, AwardScenario, Currency } from './types'
+import { formatCurrency, formatDate } from './formatters'
 
 /**
  * Aggregates raw funding sources into categorised buckets.
@@ -179,38 +180,152 @@ export function generateCopySummary(
   fundingMix: FundingMixResult,
   runwayResult: RunwayResult | null,
   url: string,
+  currency: Currency = 'USD',
+  runwayState: RunwayState | null = null,
 ): string {
-  if (fundingMix.error) return ''
+  const fmt = (v: number) => formatCurrency(v, currency)
+  const pct = (v: number) => `${v.toFixed(1)}%`
+  const generated = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 
-  const fmt = (v: number) => {
-    if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`
-    if (v >= 1_000) return `$${(v / 1_000).toFixed(0)}K`
-    return `$${v.toLocaleString()}`
-  }
+  const lines: string[] = []
 
-  const parts: string[] = []
-  if (buckets.priced_equity > 0) parts.push(`${fmt(buckets.priced_equity)} equity`)
-  if (buckets.safe_note_estimate > 0) parts.push(`${fmt(buckets.safe_note_estimate)} SAFE/note`)
-  if (buckets.grant_like > 0) parts.push(`${fmt(buckets.grant_like)} non-dilutive`)
+  lines.push('# MedAxis AI — Funding Mix Summary')
+  lines.push('')
+  lines.push(`*Generated ${generated} · For strategic planning only — not legal or financial advice.*`)
+  lines.push('')
+  lines.push('---')
+  lines.push('')
 
-  let summary = `Modeled ${fmt(buckets.totalCapitalRaised)} blended raise`
-  if (parts.length > 0) summary += ` (${parts.join(' + ')})`
-
-  if (fundingMix.founderOwnershipPreservedPts > 0) {
-    summary += ` preserving ${fundingMix.founderOwnershipPreservedPts.toFixed(1)} founder ownership points`
-  }
-
-  if (runwayResult && !runwayResult.error && runwayResult.currentRunwayMonths < Infinity) {
-    summary += `. Runway: ${runwayResult.currentRunwayMonths.toFixed(1)} months`
-    if (runwayResult.awardScenario?.type === 'AWARD_ON_SCHEDULE') {
-      summary += `, extending to ${runwayResult.awardScenario.totalRunwayWithAward.toFixed(1)} with pending award`
+  // Funding sources
+  if (buckets.totalModeledCash > 0) {
+    lines.push('## Funding Sources')
+    lines.push('')
+    lines.push('| Type | Amount |')
+    lines.push('|---|---|')
+    if (buckets.priced_equity > 0)      lines.push(`| Priced equity | ${fmt(buckets.priced_equity)} |`)
+    if (buckets.safe_note_estimate > 0) lines.push(`| SAFE / convertible note | ${fmt(buckets.safe_note_estimate)} |`)
+    if (buckets.grant_like > 0)         lines.push(`| Grant / non-dilutive | ${fmt(buckets.grant_like)} |`)
+    if (buckets.operating_cash > 0)     lines.push(`| Operating revenue | ${fmt(buckets.operating_cash)} |`)
+    lines.push('')
+    lines.push(`**Total capital raised:** ${fmt(buckets.totalCapitalRaised)}`)
+    if (buckets.operating_cash > 0) {
+      lines.push(`**Total modeled cash:** ${fmt(buckets.totalModeledCash)} *(operating revenue excluded from dilution math)*`)
     }
+    const breakdown: string[] = []
+    if (buckets.totalDilutive > 0)    breakdown.push(`Dilutive: ${fmt(buckets.totalDilutive)}`)
+    if (buckets.totalNonDilutive > 0) breakdown.push(`Non-dilutive: ${fmt(buckets.totalNonDilutive)}`)
+    if (breakdown.length > 0) lines.push(`*${breakdown.join(' · ')}*`)
+    lines.push('')
+    lines.push('---')
+    lines.push('')
   }
 
-  if (buckets.safe_note_estimate > 0) {
-    summary += '. SAFE/note amounts are estimate-only and excluded from the primary ownership metric'
+  // Ownership & dilution
+  if (!fundingMix.error) {
+    lines.push('## Ownership & Dilution')
+    lines.push('')
+    lines.push('| Metric | Value |')
+    lines.push('|---|---|')
+    lines.push(`| Pre-money valuation | ${fmt(company.preMoney)} |`)
+    lines.push(`| Founder ownership entering | ${pct(company.founderOwnershipPct)} |`)
+    lines.push(`| Actual dilution (priced equity only) | ${pct(fundingMix.actualDilutionPct)} |`)
+    lines.push(`| **Founder ownership after raise** | **${pct(fundingMix.actualFounderOwnershipPct)}** |`)
+    lines.push(`| Post-money valuation | ${fmt(fundingMix.actualPostMoneyValuation)} |`)
+    if (fundingMix.founderOwnershipPreservedPts > 0) {
+      lines.push(`| Ownership preserved vs. all-equity scenario | +${fundingMix.founderOwnershipPreservedPts.toFixed(1)} pts |`)
+    }
+    if (fundingMix.illustrativeValuePreserved > 0) {
+      lines.push(`| Illustrative equity value preserved | ~${fmt(fundingMix.illustrativeValuePreserved)} |`)
+    }
+    if (fundingMix.nonDilutiveSharePct > 0) {
+      lines.push(`| Non-dilutive share of raise | ${pct(fundingMix.nonDilutiveSharePct)} |`)
+    }
+    lines.push('')
+    if (fundingMix.hasSafeNote) {
+      lines.push(`> *Estimated combined dilution if SAFE/note converts: ~${pct(fundingMix.estimatedCombinedDilutionPct)}. SAFE/note amounts are estimates only and excluded from the primary ownership metric.*`)
+      lines.push('')
+    }
+    lines.push('---')
+    lines.push('')
   }
 
-  summary += `. Built for life sciences: ${url}`
-  return summary
+  // Runway
+  const hasRunway = runwayState !== null || runwayResult !== null
+  if (hasRunway) {
+    lines.push('## Runway')
+    lines.push('')
+
+    if (runwayState) {
+      lines.push('### Inputs')
+      lines.push('')
+      lines.push('| | |')
+      lines.push('|---|---|')
+      lines.push(`| Cash on hand | ${fmt(runwayState.cashOnHand)} |`)
+      lines.push(`| Monthly burn | ${fmt(runwayState.monthlyBurn)} |`)
+      if (runwayState.monthlyInflows > 0) {
+        lines.push(`| Monthly inflows | ${fmt(runwayState.monthlyInflows)} |`)
+        lines.push(`| Net burn | ${fmt(runwayState.monthlyBurn - runwayState.monthlyInflows)} |`)
+      }
+      lines.push('')
+    }
+
+    if (runwayResult) {
+      if (runwayResult.error === 'NET_BURN_NOT_POSITIVE') {
+        lines.push(`> **Runway not limited** — ${runwayResult.message}`)
+        lines.push('')
+      } else {
+        lines.push('### Results')
+        lines.push('')
+        lines.push('| Metric | Value |')
+        lines.push('|---|---|')
+        lines.push(`| Current runway | ${runwayResult.currentRunwayMonths.toFixed(1)} months |`)
+        if (runwayResult.cashOutDate) {
+          lines.push(`| Estimated cash-out | ${formatDate(runwayResult.cashOutDate)} |`)
+        }
+        if (runwayResult.capitalTo18Months != null) {
+          lines.push(`| Capital needed — 18 months | ${fmt(runwayResult.capitalTo18Months)} |`)
+        }
+        if (runwayResult.capitalTo24Months != null) {
+          lines.push(`| Capital needed — 24 months | ${fmt(runwayResult.capitalTo24Months)} |`)
+        }
+        lines.push('')
+
+        const scenario = runwayResult.awardScenario
+        if (scenario) {
+          if (scenario.type === 'AWARD_ON_SCHEDULE') {
+            lines.push('### Pending Award Scenario')
+            lines.push('')
+            lines.push('| | |')
+            lines.push('|---|---|')
+            if (runwayState?.pendingAwardAmount) {
+              lines.push(`| Award amount | ${fmt(runwayState.pendingAwardAmount)} |`)
+            }
+            lines.push(`| Timing midpoint | ${scenario.timingMidpoint} months |`)
+            lines.push(`| **Total runway with award** | **${scenario.totalRunwayWithAward.toFixed(1)} months** |`)
+            lines.push('')
+          } else if (scenario.type === 'CASH_OUT_BEFORE_AWARD') {
+            lines.push(`> ⚠️ **Cash out before award arrives.** Bridge funding needed: **${fmt(scenario.bridgeNeeded)}**`)
+            if (scenario.bridgeFundedRunway) {
+              lines.push(`> If bridge secured: ${scenario.bridgeFundedRunway.toFixed(1)} months total runway.`)
+            }
+            lines.push('')
+          } else if (scenario.type === 'TIMING_UNCERTAIN') {
+            lines.push(`> *Pending award timing is uncertain. If awarded on schedule: ${scenario.ifAwardedMonths.toFixed(1)} months total runway.*`)
+            lines.push('')
+          }
+        }
+      }
+    }
+
+    lines.push('---')
+    lines.push('')
+  }
+
+  lines.push('*Supports US, Canadian, UK, and European non-equity funding contexts.*')
+  lines.push('')
+  lines.push(`[View or share this model](${url})`)
+  lines.push('')
+  lines.push('*Built for life sciences founders by [MedAxis AI](https://medaxisai.org)*')
+
+  return lines.join('\n')
 }

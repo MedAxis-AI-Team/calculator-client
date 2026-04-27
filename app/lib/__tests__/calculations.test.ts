@@ -247,25 +247,29 @@ describe('generateCopySummary', () => {
   const co: Company = { preMoney: 8_000_000, founderOwnershipPct: 75 }
   const url = 'https://calculator.medaxisai.org'
 
-  it('returns empty string when fundingMix has error', () => {
+  it('returns a partial markdown summary even when fundingMix has an error', () => {
     const buckets = aggregateSources([])
-    expect(generateCopySummary(co, buckets, { error: 'NO_PRE_MONEY' }, null, url)).toBe('')
+    const result = generateCopySummary(co, buckets, { error: 'NO_PRE_MONEY' }, null, url)
+    // Still returns the shell document — header, footer, URL — just no ownership section
+    expect(result).toContain('MedAxis AI')
+    expect(result).toContain(url)
+    expect(result).not.toContain('Ownership & Dilution')
   })
 
-  it('omits runway sentence when runwayResult is null', () => {
+  it('omits the runway section when runwayResult and runwayState are both null', () => {
     const buckets = aggregateSources([src('equity', 1_000_000)])
     const mix = calculateFundingMix(co, buckets)
     const result = generateCopySummary(co, buckets, mix, null, url)
-    expect(result).not.toContain('Runway:')
+    expect(result).not.toContain('## Runway')
     expect(result).toContain(url)
   })
 
-  it('includes SAFE/note in parts and appends disclaimer', () => {
+  it('includes SAFE/note row and disclaimer when safe_note_estimate > 0', () => {
     const buckets = aggregateSources([src('equity', 1_000_000), src('safe', 500_000)])
     const mix = calculateFundingMix(co, buckets)
     const result = generateCopySummary(co, buckets, mix, null, url)
-    expect(result).toContain('SAFE/note')
-    expect(result).toContain('estimate-only')
+    expect(result).toContain('SAFE / convertible note')
+    expect(result).toContain('estimates only')
   })
 
   it('formats amounts under $1K using toLocaleString', () => {
