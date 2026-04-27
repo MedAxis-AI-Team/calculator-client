@@ -11,6 +11,7 @@ import FundingMixTab from './components/funding/FundingMixTab'
 import RunwayTab from './components/runway/RunwayTab'
 import FooterCTA from './components/layout/FooterCTA'
 
+import { useMobile } from './hooks'
 import { reducer, INITIAL_STATE } from './lib/reducer'
 import { parseSharedState, encodeState } from './lib/validators'
 import { aggregateSources, calculateFundingMix, calculateRunway, generateCopySummary } from './lib/calculations'
@@ -27,6 +28,7 @@ export default function CalculatorPage() {
   const isResultsInViewRef = useRef(false)
   const hasTrackedResultsViewRef = useRef(false)
   const [copiedBtn, setCopiedBtn] = useState<'share' | 'summary' | null>(null)
+  const isMobile = useMobile()
 
   useEffect(() => {
     loadTimeRef.current = Date.now()
@@ -185,13 +187,13 @@ export default function CalculatorPage() {
             className={`page-actions__btn${copiedBtn === 'share' ? ' page-actions__btn--copied' : ''}`}
             onClick={handleShare}
           >
-            {copiedBtn === 'share' ? 'Copied!' : 'Share URL'}
+            {copiedBtn === 'share' ? 'Copied!' : isMobile ? 'Share' : 'Share URL'}
           </button>
           <button
             className={`page-actions__btn${copiedBtn === 'summary' ? ' page-actions__btn--copied' : ''}`}
             onClick={handleCopySummary}
           >
-            {copiedBtn === 'summary' ? 'Copied!' : 'Copy Summary'}
+            {copiedBtn === 'summary' ? 'Copied!' : isMobile ? 'Copy' : 'Copy Summary'}
           </button>
         </div>
 

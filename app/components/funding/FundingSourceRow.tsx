@@ -1,6 +1,7 @@
 import { NumericFormat } from 'react-number-format'
 import type { FundingSource, FundingSourceType, Currency, AppAction } from '../../lib/types'
 import { getCurrencySymbol } from '../../lib/formatters'
+import { useMobile } from '../../hooks'
 import './FundingSourceRow.css'
 
 const SOURCE_TYPES: { value: FundingSourceType; label: string }[] = [
@@ -20,42 +21,65 @@ interface Props {
 }
 
 export default function FundingSourceRow({ source, currency, dispatch }: Props) {
+  const isMobile = useMobile()
   const prefix = getCurrencySymbol(currency)
+
+  const typeSelect = (
+    <select
+      className="source-row__type"
+      value={source.type}
+      onChange={e => dispatch({ type: 'UPDATE_SOURCE', id: source.id, field: 'type', value: e.target.value as FundingSourceType })}
+      aria-label="Funding type"
+    >
+      {SOURCE_TYPES.map(t => (
+        <option key={t.value} value={t.value}>{t.label}</option>
+      ))}
+    </select>
+  )
+
+  const amountInput = (
+    <NumericFormat
+      className="source-row__amount"
+      value={source.amount === 0 ? '' : source.amount}
+      thousandSeparator
+      prefix={prefix}
+      decimalScale={0}
+      allowNegative={false}
+      placeholder={`${prefix}0`}
+      aria-label="Amount"
+      onValueChange={({ floatValue }) =>
+        dispatch({ type: 'UPDATE_SOURCE', id: source.id, field: 'amount', value: floatValue ?? 0 })
+      }
+    />
+  )
+
+  const removeBtn = (
+    <button
+      className="source-row__remove"
+      onClick={() => dispatch({ type: 'REMOVE_SOURCE', id: source.id })}
+      aria-label="Remove funding source"
+    >
+      ×
+    </button>
+  )
+
+  if (isMobile) {
+    return (
+      <div className="source-row source-row--mobile">
+        {typeSelect}
+        <div className="source-row__mobile-row">
+          {amountInput}
+          {removeBtn}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="source-row">
-      <select
-        className="source-row__type"
-        value={source.type}
-        onChange={e => dispatch({ type: 'UPDATE_SOURCE', id: source.id, field: 'type', value: e.target.value as FundingSourceType })}
-        aria-label="Funding type"
-      >
-        {SOURCE_TYPES.map(t => (
-          <option key={t.value} value={t.value}>{t.label}</option>
-        ))}
-      </select>
-
-      <NumericFormat
-        className="source-row__amount"
-        value={source.amount === 0 ? '' : source.amount}
-        thousandSeparator
-        prefix={prefix}
-        decimalScale={0}
-        allowNegative={false}
-        placeholder={`${prefix}0`}
-        aria-label="Amount"
-        onValueChange={({ floatValue }) =>
-          dispatch({ type: 'UPDATE_SOURCE', id: source.id, field: 'amount', value: floatValue ?? 0 })
-        }
-      />
-
-      <button
-        className="source-row__remove"
-        onClick={() => dispatch({ type: 'REMOVE_SOURCE', id: source.id })}
-        aria-label="Remove funding source"
-      >
-        ×
-      </button>
+      {typeSelect}
+      {amountInput}
+      {removeBtn}
     </div>
   )
 }
