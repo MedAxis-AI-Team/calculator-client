@@ -20,3 +20,8 @@
   border-color: var(--color-teal);
   color: var(--color-teal);
 }
+
+.page-actions__btn--copied {
+  border-color: var(--color-teal);
+  color: var(--color-teal);
+}

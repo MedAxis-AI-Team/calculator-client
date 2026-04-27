@@ -1,6 +1,6 @@
 'use client'
 
-import { useReducer, useEffect, useRef, useCallback } from 'react'
+import { useReducer, useEffect, useRef, useCallback, useState } from 'react'
 import { usePostHog } from 'posthog-js/react'
 
 import type { AppAction, ActiveTab, Currency } from './lib/types'
@@ -25,6 +25,7 @@ export default function CalculatorPage() {
   const resultsRef = useRef<HTMLDivElement>(null)
   const isResultsInViewRef = useRef(false)
   const hasTrackedResultsViewRef = useRef(false)
+  const [copiedBtn, setCopiedBtn] = useState<'share' | 'summary' | null>(null)
 
   useEffect(() => {
     const raw = new URLSearchParams(window.location.search).get('model')
@@ -125,6 +126,8 @@ export default function CalculatorPage() {
         has_safe_note: buckets.safe_note_estimate > 0,
         has_pending_award: state.runway.pendingAwardAmount > 0,
       })
+      setCopiedBtn('share')
+      setTimeout(() => setCopiedBtn(null), 1500)
     } catch {
       window.prompt('Copy this URL to share:', window.location.href)
     }
@@ -134,7 +137,7 @@ export default function CalculatorPage() {
     const buckets = aggregateSources(state.fundingSources)
     const mix = calculateFundingMix(state.company, buckets)
     const runway = calculateRunway(state.runway)
-    const text = generateCopySummary(state.company, buckets, mix, runway, window.location.href)
+    const text = generateCopySummary(state.company, buckets, mix, runway, window.location.href, state.currency, state.runway)
     try {
       await navigator.clipboard.writeText(text)
       posthog?.capture('copy_summary_click', {
@@ -142,6 +145,8 @@ export default function CalculatorPage() {
         includes_runway: !runway?.error,
         has_safe_note: buckets.safe_note_estimate > 0,
       })
+      setCopiedBtn('summary')
+      setTimeout(() => setCopiedBtn(null), 1500)
     } catch {
       window.prompt('Copy this summary:', text)
     }
@@ -150,7 +155,9 @@ export default function CalculatorPage() {
   return (
     <>
       <header className="site-header">
-        <span className="site-header__wordmark">MedAxis<span> AI</span></span>
+        <a href="https://medaxisai.org" className="site-header__logo-link" aria-label="MedAxis AI">
+          <img src="/md.png" alt="MedAxis AI" className="site-header__logo" />
+        </a>
         <CurrencySelector
           currency={state.currency}
           onChange={(c: Currency) => trackedDispatch({ type: 'SET_CURRENCY', currency: c })}
@@ -169,8 +176,18 @@ export default function CalculatorPage() {
         </div>
 
         <div className="page-actions">
-          <button className="page-actions__btn" onClick={handleShare}>Share URL</button>
-          <button className="page-actions__btn" onClick={handleCopySummary}>Copy Summary</button>
+          <button
+            className={`page-actions__btn${copiedBtn === 'share' ? ' page-actions__btn--copied' : ''}`}
+            onClick={handleShare}
+          >
+            {copiedBtn === 'share' ? 'Copied!' : 'Share URL'}
+          </button>
+          <button
+            className={`page-actions__btn${copiedBtn === 'summary' ? ' page-actions__btn--copied' : ''}`}
+            onClick={handleCopySummary}
+          >
+            {copiedBtn === 'summary' ? 'Copied!' : 'Copy Summary'}
+          </button>
         </div>
 
         <Tabs activeTab={state.activeTab} onSwitch={handleTabSwitch} />

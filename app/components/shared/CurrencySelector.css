@@ -16,10 +16,15 @@
 }
 
 .currency-selector__btn:last-child { border-right: none; }
-.currency-selector__btn:hover { background: var(--color-gray-light); }
+.currency-selector__btn:hover { background: var(--color-gray-light); color: var(--color-dark); }
 
 .currency-selector__btn--active {
   background: var(--color-teal);
   color: var(--color-white);
   font-weight: 600;
+}
+
+.currency-selector__btn--active:hover {
+  background: var(--color-teal);
+  color: var(--color-white);
 }
