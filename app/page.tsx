@@ -43,12 +43,6 @@ export default function CalculatorPage() {
   }, [])
 
   useEffect(() => {
-    const url = new URL(window.location.href)
-    url.searchParams.set('model', encodeState(state))
-    window.history.replaceState(null, '', url.toString())
-  }, [state])
-
-  useEffect(() => {
     return () => { if (interactionTimerRef.current) clearTimeout(interactionTimerRef.current) }
   }, [])
 
@@ -125,8 +119,12 @@ export default function CalculatorPage() {
 
   async function handleShare() {
     const buckets = aggregateSources(state.fundingSources)
+    const shareUrl = new URL(window.location.href)
+    shareUrl.searchParams.set('model', encodeState(state))
+    const shareUrlStr = shareUrl.toString()
     try {
-      await navigator.clipboard.writeText(window.location.href)
+      await navigator.clipboard.writeText(shareUrlStr)
+      window.history.replaceState(null, '', shareUrlStr)
       posthog?.capture('share_click', {
         active_tab: state.activeTab,
         source_count: state.fundingSources.length,
@@ -136,7 +134,7 @@ export default function CalculatorPage() {
       setCopiedBtn('share')
       setTimeout(() => setCopiedBtn(null), 1500)
     } catch {
-      window.prompt('Copy this URL to share:', window.location.href)
+      window.prompt('Copy this URL to share:', shareUrlStr)
     }
   }
 
