@@ -1,5 +1,5 @@
 import type { RunwayResult, AwardScenario, Currency } from '../../lib/types'
-import ResultCard from '../shared/ResultCard'
+import ResultCard from '../../components/ResultCard'
 import { formatMonths, formatCurrency, formatDate } from '../../lib/formatters'
 import './RunwayResults.css'
 

@@ -1,4 +1,4 @@
-import type { ActiveTab } from '../../lib/types'
+import type { ActiveTab } from '../lib/types'
 import './Tabs.css'
 
 interface Props {

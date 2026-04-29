@@ -1,6 +1,6 @@
 import { NumericFormat } from 'react-number-format'
-import type { Currency } from '../../lib/types'
-import { getCurrencySymbol } from '../../lib/formatters'
+import type { Currency } from '../lib/types'
+import { getCurrencySymbol } from '../lib/formatters'
 import './FormField.css'
 
 interface Props {

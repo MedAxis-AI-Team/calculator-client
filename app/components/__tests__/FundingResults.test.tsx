@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import FundingResults from '../funding/FundingResults'
+import FundingResults from '../../features/funding/FundingResults'
 import type { FundingMixResult, SourceBuckets } from '../../lib/types'
 
 const emptyBuckets: SourceBuckets = {

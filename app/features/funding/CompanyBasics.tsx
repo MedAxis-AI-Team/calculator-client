@@ -1,6 +1,6 @@
 import type { Company, Currency, AppAction } from '../../lib/types'
-import CurrencyInput from '../shared/CurrencyInput'
-import PercentInput from '../shared/PercentInput'
+import CurrencyInput from '../../components/CurrencyInput'
+import PercentInput from '../../components/PercentInput'
 import './CompanyBasics.css'
 
 interface Props {

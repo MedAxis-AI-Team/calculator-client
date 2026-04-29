@@ -1,4 +1,4 @@
-import type { Currency } from '../../lib/types'
+import type { Currency } from '../lib/types'
 import './CurrencySelector.css'
 
 const CURRENCIES: Currency[] = ['USD', 'CAD', 'EUR', 'GBP']

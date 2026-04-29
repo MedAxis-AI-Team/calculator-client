@@ -1,5 +1,5 @@
 import type { RunwayState, PendingTiming, Currency, AppAction } from '../../lib/types'
-import CurrencyInput from '../shared/CurrencyInput'
+import CurrencyInput from '../../components/CurrencyInput'
 import './RunwayInputs.css'
 
 const TIMING_OPTIONS: { value: PendingTiming; label: string }[] = [

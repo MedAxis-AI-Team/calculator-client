@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import CurrencySelector from '../shared/CurrencySelector'
+import CurrencySelector from '../CurrencySelector'
 
 // Regression: active button text was invisible on hover because `.currency-selector__btn:hover`
 // overrode `background` to near-white while `color: white` from `--active` remained.

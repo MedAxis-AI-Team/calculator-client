@@ -1,5 +1,5 @@
 import type { FundingMixResult, SourceBuckets, Currency } from '../../lib/types'
-import ResultCard from '../shared/ResultCard'
+import ResultCard from '../../components/ResultCard'
 import StackedBar from './StackedBar'
 import { formatCurrency, formatPct } from '../../lib/formatters'
 import './FundingResults.css'

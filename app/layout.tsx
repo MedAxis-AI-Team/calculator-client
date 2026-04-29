@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Prata, Inter } from 'next/font/google'
 import './globals.css'
-import PostHogProvider from './components/layout/PostHogProvider'
+import PostHogProvider from './layouts/PostHogProvider'
 
 const prata = Prata({
   subsets: ['latin'],
