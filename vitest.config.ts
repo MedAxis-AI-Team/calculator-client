@@ -25,6 +25,15 @@ export default defineConfig({
           globals: true,
         },
       },
+      {
+        test: {
+          name: 'hooks',
+          environment: 'jsdom',
+          include: ['app/hooks/__tests__/**/*.test.ts'],
+          setupFiles: ['app/hooks/__tests__/setup.ts'],
+          globals: true,
+        },
+      },
     ],
   },
 })

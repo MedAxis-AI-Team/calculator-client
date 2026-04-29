@@ -11,7 +11,9 @@ Two tabs: Funding Mix and Runway. All math is client-side, no backend.
 - Styling: Plain CSS + CSS custom properties — no Tailwind in implementation
 - State: single `useReducer` in app/page.tsx
 - Runtime deps: posthog-js, @posthog/react, react-number-format (only additions)
-- Components: `app/components/shared/`, `funding/`, `runway/`, `layout/`
+- Components: `app/components/` (shared atoms), `app/features/funding/`, `app/features/runway/`
+- Hooks: `app/hooks/` — useMobile, useUrlHydration, useShareActions, usePostHogTracking
+- Layouts: `app/layouts/` — PostHogProvider, FooterCTA
 
 ## Key References
 - Build spec: context/001/FINAL-funding-mix-calculator-build-spec.md
