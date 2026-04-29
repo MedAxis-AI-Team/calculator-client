@@ -47,6 +47,18 @@ describe('parseSharedState — invalid inputs', () => {
     expect(parseSharedState(raw)).toBeNull()
   })
 
+  it('returns null when company.founderOwnershipPct is missing', () => {
+    const state = { version: 1, ...INITIAL_STATE, company: { preMoney: 8_000_000 } }
+    const raw = btoa(JSON.stringify(state))
+    expect(parseSharedState(raw)).toBeNull()
+  })
+
+  it('returns null when fundingSources is not an array', () => {
+    const state = { version: 1, ...INITIAL_STATE, fundingSources: 'not-an-array' }
+    const raw = btoa(JSON.stringify(state))
+    expect(parseSharedState(raw)).toBeNull()
+  })
+
   it('returns null for invalid fundingSource type', () => {
     const state = {
       version: 1,

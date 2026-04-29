@@ -250,7 +250,6 @@ describe('generateCopySummary', () => {
   it('returns a partial markdown summary even when fundingMix has an error', () => {
     const buckets = aggregateSources([])
     const result = generateCopySummary(co, buckets, { error: 'NO_PRE_MONEY' }, null, url)
-    // Still returns the shell document — header, footer, URL — just no ownership section
     expect(result).toContain('MedAxis AI')
     expect(result).toContain(url)
     expect(result).not.toContain('Ownership & Dilution')
@@ -277,5 +276,65 @@ describe('generateCopySummary', () => {
     const mix = calculateFundingMix(co, buckets)
     const result = generateCopySummary(co, buckets, mix, null, url)
     expect(result).toContain('$500')
+  })
+
+  it('includes AWARD_ON_SCHEDULE table with timing and total runway', () => {
+    const rs = runway(400_000, 45_000, 0, 275_000, '3-6')
+    const runwayResult = calculateRunway(rs)
+    const buckets = aggregateSources([src('equity', 1_000_000)])
+    const mix = calculateFundingMix(co, buckets)
+    const result = generateCopySummary(co, buckets, mix, runwayResult, url, 'USD', rs)
+    expect(result).toContain('Pending Award Scenario')
+    expect(result).toContain('Total runway with award')
+    expect(result).toContain('Award amount')
+    expect(result).toContain('4.5 months')
+  })
+
+  it('includes CASH_OUT_BEFORE_AWARD warning with bridge amount and funded runway', () => {
+    const rs = runway(150_000, 45_000, 0, 275_000, '6-12')
+    const runwayResult = calculateRunway(rs)
+    const buckets = aggregateSources([src('equity', 1_000_000)])
+    const mix = calculateFundingMix(co, buckets)
+    const result = generateCopySummary(co, buckets, mix, runwayResult, url, 'USD', rs)
+    expect(result).toContain('Cash out before award')
+    expect(result).toContain('Bridge funding needed')
+    expect(result).toContain('bridge secured')
+  })
+
+  it('includes TIMING_UNCERTAIN note with ifAwardedMonths', () => {
+    const rs = runway(400_000, 45_000, 0, 275_000, 'uncertain')
+    const runwayResult = calculateRunway(rs)
+    const buckets = aggregateSources([src('equity', 1_000_000)])
+    const mix = calculateFundingMix(co, buckets)
+    const result = generateCopySummary(co, buckets, mix, runwayResult, url, 'USD', rs)
+    expect(result).toContain('timing is uncertain')
+    expect(result).toContain('15.0 months')
+  })
+
+  it('includes total modeled cash line when operating_cash > 0', () => {
+    const buckets = aggregateSources([src('equity', 1_000_000), src('operating_revenue', 200_000)])
+    const mix = calculateFundingMix(co, buckets)
+    const result = generateCopySummary(co, buckets, mix, null, url)
+    expect(result).toContain('Total modeled cash')
+    expect(result).toContain('operating revenue excluded from dilution math')
+  })
+
+  it('includes monthly inflows row when inflows > 0', () => {
+    const rs = runway(400_000, 45_000, 10_000)
+    const runwayResult = calculateRunway(rs)
+    const buckets = aggregateSources([src('equity', 1_000_000)])
+    const mix = calculateFundingMix(co, buckets)
+    const result = generateCopySummary(co, buckets, mix, runwayResult, url, 'USD', rs)
+    expect(result).toContain('Monthly inflows')
+    expect(result).toContain('Net burn')
+  })
+
+  it('includes NET_BURN_NOT_POSITIVE message in runway section', () => {
+    const rs = runway(400_000, 30_000, 30_000)
+    const runwayResult = calculateRunway(rs)
+    const buckets = aggregateSources([src('equity', 1_000_000)])
+    const mix = calculateFundingMix(co, buckets)
+    const result = generateCopySummary(co, buckets, mix, runwayResult, url, 'USD', rs)
+    expect(result).toContain('Runway not limited')
   })
 })
