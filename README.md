@@ -68,11 +68,12 @@ The `Makefile` is the primary interface. All targets are documented via `make he
 
 ```
 app/
-  components/
-    shared/    CurrencyInput, PercentInput, ResultCard, Tabs, CurrencySelector
-    funding/   FundingMixTab, CompanyBasics, FundingSourceRow, FundingSourcesList, FundingResults, StackedBar
-    runway/    RunwayTab, RunwayInputs, RunwayResults
-    layout/    PostHogProvider, FooterCTA
+  components/         Shared atoms — CurrencyInput, PercentInput, ResultCard, Tabs, CurrencySelector
+  features/
+    funding/          FundingMixTab, CompanyBasics, FundingSourceRow, FundingSourcesList, FundingResults, StackedBar
+    runway/           RunwayTab, RunwayInputs, RunwayResults
+  hooks/              Custom hooks — useMobile, useUrlHydration, useShareActions, usePostHogTracking
+  layouts/            PostHogProvider, FooterCTA
   lib/
     calculations.ts   Pure math — aggregateSources, calculateFundingMix, calculateRunway
     formatters.ts     Display formatting — currency, percent, months
@@ -80,7 +81,7 @@ app/
     reducer.ts        useReducer actions and INITIAL_STATE
     types.ts          All shared TypeScript types
     __tests__/        Unit, integration, and component tests
-  page.tsx            Root — useReducer, PostHog events, URL sync
+  page.tsx            Root — useReducer wired to hooks, render only
   globals.css         Brand tokens and global styles
 e2e/                  Playwright specs
 scripts/

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import RunwayResults from '../runway/RunwayResults'
+import RunwayResults from '../../features/runway/RunwayResults'
 import type { RunwayResult } from '../../lib/types'
 
 const notPositiveResult: RunwayResult = {
