@@ -11,7 +11,7 @@ interface UsePostHogTrackingReturn {
 }
 
 export function usePostHogTracking(
-  state: AppState,
+  state: Pick<AppState, 'activeTab' | 'fundingSources'>,
   dispatch: React.Dispatch<AppAction>,
 ): UsePostHogTrackingReturn {
   const posthog = usePostHog()
@@ -53,7 +53,7 @@ export function usePostHogTracking(
       priced_equity_amount: buckets.priced_equity,
       grant_like_amount: buckets.grant_like,
     })
-  }, [posthog, state])
+  }, [posthog, state.activeTab, state.fundingSources])
 
   useEffect(() => {
     function fireTimeOnPage() {
@@ -89,18 +89,18 @@ export function usePostHogTracking(
     }, 800)
   }, [dispatch, posthog, state.activeTab, state.fundingSources.length])
 
-  function handleTabSwitch(tab: AppState['activeTab']) {
+  const handleTabSwitch = useCallback((tab: AppState['activeTab']) => {
     dispatch({ type: 'SET_ACTIVE_TAB', tab })
     posthog?.capture('tab_switch', { tab })
-  }
+  }, [dispatch, posthog])
 
-  function handleLoadExample(hasSources: boolean, onConfirm: () => void) {
+  const handleLoadExample = useCallback((hasSources: boolean, onConfirm: () => void) => {
     posthog?.capture('load_example_click', { example: 'typical_early_stage' })
     if (hasSources) {
       if (!window.confirm('This will overwrite your current numbers with the example scenario. Continue?')) return
     }
     onConfirm()
-  }
+  }, [posthog])
 
   return { trackedDispatch, handleTabSwitch, handleLoadExample, resultsRef }
 }
