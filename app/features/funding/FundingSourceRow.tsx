@@ -14,6 +14,16 @@ const SOURCE_TYPES: { value: FundingSourceType; label: string }[] = [
   { value: 'operating_revenue', label: 'Operating revenue / bootstrap' },
 ]
 
+const TYPE_DEFAULTS: Record<FundingSourceType, number> = {
+  equity:            1_500_000,
+  safe:              500_000,
+  convertible_note:  500_000,
+  public_grant:      275_000,
+  rd_tax_credit:     100_000,
+  foundation_award:  100_000,
+  operating_revenue: 0,
+}
+
 interface Props {
   source: FundingSource
   currency: Currency
@@ -28,7 +38,11 @@ export default function FundingSourceRow({ source, currency, dispatch }: Props) 
     <select
       className="source-row__type"
       value={source.type}
-      onChange={e => dispatch({ type: 'UPDATE_SOURCE', id: source.id, field: 'type', value: e.target.value as FundingSourceType })}
+      onChange={e => {
+        const newType = e.target.value as FundingSourceType
+        dispatch({ type: 'UPDATE_SOURCE', id: source.id, field: 'type', value: newType })
+        dispatch({ type: 'UPDATE_SOURCE', id: source.id, field: 'amount', value: TYPE_DEFAULTS[newType] })
+      }}
       aria-label="Funding type"
     >
       {SOURCE_TYPES.map(t => (
@@ -48,7 +62,7 @@ export default function FundingSourceRow({ source, currency, dispatch }: Props) 
       placeholder={`${prefix}0`}
       aria-label="Amount"
       onValueChange={({ floatValue }) =>
-        dispatch({ type: 'UPDATE_SOURCE', id: source.id, field: 'amount', value: floatValue ?? 0 })
+        dispatch({ type: 'UPDATE_SOURCE', id: source.id, field: 'amount', value: Math.round(floatValue ?? 0) })
       }
     />
   )

@@ -25,7 +25,7 @@ export default function CurrencyInput({ label, value, currency, onChange, hint }
         decimalScale={0}
         allowNegative={false}
         placeholder={`${prefix}0`}
-        onValueChange={({ floatValue }) => onChange(floatValue ?? 0)}
+        onValueChange={({ floatValue }) => onChange(Math.round(floatValue ?? 0))}
       />
       {hint && <span className="form-field__hint">{hint}</span>}
     </div>

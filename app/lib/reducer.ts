@@ -38,7 +38,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     case 'ADD_SOURCE':
       return {
         ...state,
-        fundingSources: [...state.fundingSources, { id: newId(), type: 'equity', amount: 0 }],
+        fundingSources: [...state.fundingSources, { id: newId(), type: 'equity', amount: 1_500_000 }],
       }
 
     case 'REMOVE_SOURCE':
