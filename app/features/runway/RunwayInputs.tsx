@@ -24,8 +24,12 @@ export default function RunwayInputs({ runway, currency, dispatch }: Props) {
     <section className="runway-inputs">
       <h2 className="runway-inputs__title">Runway Inputs</h2>
       <div className="runway-inputs__grid">
-        <CurrencyInput label="Cash on hand"    value={runway.cashOnHand}    currency={currency} onChange={v => setField('cashOnHand', v)} />
-        <CurrencyInput label="Monthly burn"    value={runway.monthlyBurn}   currency={currency} onChange={v => setField('monthlyBurn', v)} />
+        <CurrencyInput label="Cash on hand"    value={runway.cashOnHand}    currency={currency} onChange={v => setField('cashOnHand', v)}
+          hint="Your current bank balance and liquid reserves"
+        />
+        <CurrencyInput label="Monthly burn"    value={runway.monthlyBurn}   currency={currency} onChange={v => setField('monthlyBurn', v)}
+          hint="Average monthly cash outflows including payroll, operations, and R&D"
+        />
         <CurrencyInput label="Monthly inflows" value={runway.monthlyInflows} currency={currency} onChange={v => setField('monthlyInflows', v)}
           hint="Revenue, contracts, or other recurring cash in"
         />
@@ -34,7 +38,9 @@ export default function RunwayInputs({ runway, currency, dispatch }: Props) {
       <div className="runway-inputs__award">
         <h3 className="runway-inputs__award-title">Pending Award (optional)</h3>
         <div className="runway-inputs__grid">
-          <CurrencyInput label="Expected amount" value={runway.pendingAwardAmount} currency={currency} onChange={v => setField('pendingAwardAmount', v)} />
+          <CurrencyInput label="Expected amount" value={runway.pendingAwardAmount} currency={currency} onChange={v => setField('pendingAwardAmount', v)}
+            hint="Expected grant, tax credit, or non-dilutive award amount"
+          />
           <div className="form-field">
             <label className="form-field__label">Expected timing</label>
             <select

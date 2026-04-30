@@ -310,7 +310,7 @@ export function generateCopySummary(
             }
             lines.push('')
           } else if (scenario.type === 'TIMING_UNCERTAIN') {
-            lines.push(`> *Pending award timing is uncertain. If awarded on schedule: ${scenario.ifAwardedMonths.toFixed(1)} months total runway.*`)
+            lines.push(`> *Pending award excluded from projection — timing uncertain. If funded: ${scenario.ifAwardedMonths.toFixed(1)} months total runway.*`)
             lines.push('')
           }
         }
