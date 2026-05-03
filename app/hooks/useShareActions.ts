@@ -3,6 +3,11 @@ import { usePostHog } from 'posthog-js/react'
 import type { AppState } from '../lib/types'
 import { aggregateSources, calculateFundingMix, calculateRunway, generateCopySummary } from '../lib/calculations'
 import { encodeState } from '../lib/validators'
+import { INITIAL_STATE } from '../lib/reducer'
+
+function isRunwayDirty(state: AppState): boolean {
+  return JSON.stringify(state.runway) !== JSON.stringify(INITIAL_STATE.runway)
+}
 
 type CopiedBtn = 'share' | 'summary' | null
 
@@ -41,7 +46,8 @@ export function useShareActions(state: AppState): UseShareActionsReturn {
     const runway = calculateRunway(state.runway)
     const shareUrl = new URL(window.location.href)
     shareUrl.searchParams.set('model', encodeState(state))
-    const text = generateCopySummary(state.company, buckets, mix, runway, shareUrl.toString(), state.currency, state.runway)
+    const dirty = isRunwayDirty(state)
+    const text = generateCopySummary(state.company, buckets, mix, dirty ? runway : null, shareUrl.toString(), state.currency, dirty ? state.runway : undefined)
     try {
       await navigator.clipboard.writeText(text)
       posthog?.capture('copy_summary_click', {

@@ -307,7 +307,7 @@ describe('generateCopySummary', () => {
     const buckets = aggregateSources([src('equity', 1_000_000)])
     const mix = calculateFundingMix(co, buckets)
     const result = generateCopySummary(co, buckets, mix, runwayResult, url, 'USD', rs)
-    expect(result).toContain('timing is uncertain')
+    expect(result).toContain('timing uncertain')
     expect(result).toContain('15.0 months')
   })
 

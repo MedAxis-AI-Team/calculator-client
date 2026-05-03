@@ -119,7 +119,7 @@ export function calculateRunway(runway: RunwayState): RunwayResult {
 
   const currentRunwayMonths = cashOnHand / netBurn
   const cashOutDate = new Date()
-  cashOutDate.setMonth(cashOutDate.getMonth() + Math.floor(currentRunwayMonths))
+  cashOutDate.setDate(cashOutDate.getDate() + Math.round(currentRunwayMonths * 30.4))
 
   const capitalTo18Months = Math.max(0, 18 * netBurn - cashOnHand)
   const capitalTo24MonthsBase = Math.max(0, 24 * netBurn - cashOnHand)
@@ -310,7 +310,7 @@ export function generateCopySummary(
             }
             lines.push('')
           } else if (scenario.type === 'TIMING_UNCERTAIN') {
-            lines.push(`> *Pending award timing is uncertain. If awarded on schedule: ${scenario.ifAwardedMonths.toFixed(1)} months total runway.*`)
+            lines.push(`> *Pending award excluded from projection — timing uncertain. If funded: ${scenario.ifAwardedMonths.toFixed(1)} months total runway.*`)
             lines.push('')
           }
         }

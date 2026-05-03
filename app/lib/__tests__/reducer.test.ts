@@ -16,11 +16,11 @@ describe('SET_CURRENCY', () => {
 })
 
 describe('ADD_SOURCE', () => {
-  it('appends a source with unique id, default type equity, amount 0', () => {
+  it('appends a source with unique id, default type equity, amount $1.5M', () => {
     const next = apply(INITIAL_STATE, { type: 'ADD_SOURCE' }, { type: 'ADD_SOURCE' })
     expect(next.fundingSources).toHaveLength(2)
     expect(next.fundingSources[0].type).toBe('equity')
-    expect(next.fundingSources[0].amount).toBe(0)
+    expect(next.fundingSources[0].amount).toBe(1_500_000)
     expect(next.fundingSources[0].id).not.toBe(next.fundingSources[1].id)
   })
 })

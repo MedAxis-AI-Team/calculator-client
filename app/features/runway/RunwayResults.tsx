@@ -45,7 +45,13 @@ export default function RunwayResults({ result, currency }: Props) {
         <ResultCard
           label="Capital needed — 24 months"
           value={formatCurrency(result.capitalTo24Months, currency)}
-          sub="Includes pending award if on-schedule"
+          sub={
+            result.awardScenario?.type === 'AWARD_ON_SCHEDULE'
+              ? 'Includes pending award (on-schedule)'
+              : result.awardScenario?.type === 'TIMING_UNCERTAIN'
+              ? 'Pending award excluded — timing uncertain'
+              : 'Additional capital to reach 24-month milestone'
+          }
         />
       </div>
       <p className="runway-results__formula">
