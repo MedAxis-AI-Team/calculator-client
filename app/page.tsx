@@ -2,6 +2,7 @@
 
 import { useReducer } from 'react'
 import Image from 'next/image'
+import { useFeatureFlagVariantKey } from 'posthog-js/react'
 
 import type { Currency } from './lib/types'
 import Tabs from './components/Tabs'
@@ -23,6 +24,10 @@ export default function CalculatorPage() {
   const { trackedDispatch, handleTabSwitch, handleLoadExample, resultsRef } = usePostHogTracking(state, dispatch)
 
   const isMobile = useMobile()
+  const heroVariant = useFeatureFlagVariantKey('hero-subhead-test')
+  const heroSub = heroVariant === 'diversification'
+    ? 'Model your non-dilutive funding mix. See exactly how grants and tax credits reduce your equity ask and extend your runway.'
+    : 'A free calculator built for life sciences founders combining grants, tax credits, and equity.'
 
   function handleLoadExampleClick() {
     handleLoadExample(state.fundingSources.length > 0, () => dispatch({ type: 'LOAD_EXAMPLE' }))
@@ -43,9 +48,7 @@ export default function CalculatorPage() {
       <main className="page-wrap">
         <div className="hero">
           <h1 className="hero__title">Life Sciences Funding Mix Calculator</h1>
-          <p className="hero__sub">
-            A free calculator built for life sciences founders combining grants, tax credits, and equity.
-          </p>
+          <p className="hero__sub">{heroSub}</p>
           <p className="hero__disclaimer">
             For strategic planning only — not legal or financial advice. Supports US, Canadian, UK, and European non-equity funding contexts.
           </p>

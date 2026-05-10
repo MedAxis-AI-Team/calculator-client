@@ -6,13 +6,23 @@ import './FundingSourceRow.css'
 
 const SOURCE_TYPES: { value: FundingSourceType; label: string }[] = [
   { value: 'equity',            label: 'Priced equity round' },
-  { value: 'safe',              label: 'SAFE / convertible (estimate)' },
+  { value: 'safe',              label: 'SAFE / ASA / convertible (estimate)' },
   { value: 'convertible_note',  label: 'Convertible note (estimate)' },
   { value: 'public_grant',      label: 'Grant / contract / award (non-equity)' },
   { value: 'rd_tax_credit',     label: 'R&D tax credit' },
   { value: 'foundation_award',  label: 'Foundation award' },
   { value: 'operating_revenue', label: 'Operating revenue / bootstrap' },
 ]
+
+const TYPE_HINTS: Record<FundingSourceType, string> = {
+  equity:            'Seed: $500K–$2M · Series A: $3M–$10M',
+  safe:              'Typical: $100K–$1M per note',
+  convertible_note:  'Typical: $100K–$1M per note',
+  public_grant:      'SBIR/STTR Phase I: ~$275K · Phase II: ~$1M',
+  rd_tax_credit:     'SR&ED (CA): 15–35% of eligible spend · UK R&D: ~33%',
+  foundation_award:  'Typical: $50K–$500K',
+  operating_revenue: '',
+}
 
 const TYPE_DEFAULTS: Record<FundingSourceType, number> = {
   equity:            1_500_000,
@@ -51,20 +61,25 @@ export default function FundingSourceRow({ source, currency, dispatch }: Props) 
     </select>
   )
 
+  const hint = TYPE_HINTS[source.type]
+
   const amountInput = (
-    <NumericFormat
-      className="source-row__amount"
-      value={source.amount === 0 ? '' : source.amount}
-      thousandSeparator
-      prefix={prefix}
-      decimalScale={0}
-      allowNegative={false}
-      placeholder={`${prefix}0`}
-      aria-label="Amount"
-      onValueChange={({ floatValue }) =>
-        dispatch({ type: 'UPDATE_SOURCE', id: source.id, field: 'amount', value: Math.round(floatValue ?? 0) })
-      }
-    />
+    <div className="source-row__amount-wrap">
+      <NumericFormat
+        className="source-row__amount"
+        value={source.amount === 0 ? '' : source.amount}
+        thousandSeparator
+        prefix={prefix}
+        decimalScale={0}
+        allowNegative={false}
+        placeholder={`${prefix}0`}
+        aria-label="Amount"
+        onValueChange={({ floatValue }) =>
+          dispatch({ type: 'UPDATE_SOURCE', id: source.id, field: 'amount', value: Math.round(floatValue ?? 0) })
+        }
+      />
+      {hint && <span className="source-row__hint">{hint}</span>}
+    </div>
   )
 
   const removeBtn = (
