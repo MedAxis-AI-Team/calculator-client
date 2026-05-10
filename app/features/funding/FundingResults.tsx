@@ -36,11 +36,15 @@ export default function FundingResults({ mix, buckets, currency }: Props) {
           value={formatPct(mix.actualFounderOwnershipPct)}
           sub={`${formatPct(mix.actualDilutionPct)} dilution from priced equity`}
         />
-        <ResultCard
-          label="Ownership preserved"
-          value={`+${mix.founderOwnershipPreservedPts.toFixed(1)} pts`}
-          sub={`Worth ~${formatCurrency(mix.illustrativeValuePreserved, currency)} vs. all-equity raise`}
-        />
+        {mix.founderOwnershipPreservedPts > 0 && (
+          <ResultCard
+            label="Ownership preserved"
+            value={`+${mix.founderOwnershipPreservedPts.toFixed(1)} pts`}
+            sub={mix.illustrativeValuePreserved > 0
+              ? `Worth ~${formatCurrency(mix.illustrativeValuePreserved, currency)} vs. all-equity raise`
+              : undefined}
+          />
+        )}
         <ResultCard
           label="Non-dilutive share"
           value={formatPct(mix.nonDilutiveSharePct)}

@@ -52,8 +52,9 @@ export function useShareActions(state: AppState): UseShareActionsReturn {
       await navigator.clipboard.writeText(text)
       posthog?.capture('copy_summary_click', {
         active_tab: state.activeTab,
-        includes_runway: !runway?.error,
+        includes_runway: dirty && !runway?.error,
         has_safe_note: buckets.safe_note_estimate > 0,
+        source_count: state.fundingSources.length,
       })
       setCopiedBtn('summary')
       setTimeout(() => setCopiedBtn(null), 1500)

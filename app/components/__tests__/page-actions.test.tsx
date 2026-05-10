@@ -7,7 +7,7 @@ import userEvent from '@testing-library/user-event'
 // These tests verify the `copiedBtn` state change: buttons show "Copied!" after
 // a click and revert to their original label once the 1.5 s timeout fires.
 
-vi.mock('posthog-js/react', () => ({ usePostHog: () => null }))
+vi.mock('posthog-js/react', () => ({ usePostHog: () => null, useFeatureFlagVariantKey: () => null }))
 
 const { default: CalculatorPage } = await import('../../page')
 

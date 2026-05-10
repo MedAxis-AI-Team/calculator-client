@@ -52,6 +52,8 @@ export function usePostHogTracking(
       source_count: state.fundingSources.length,
       priced_equity_amount: buckets.priced_equity,
       grant_like_amount: buckets.grant_like,
+      has_safe_note: buckets.safe_note_estimate > 0,
+      has_pending_award: state.fundingSources.length > 0,
     })
   }, [posthog, state.activeTab, state.fundingSources])
 
@@ -80,7 +82,9 @@ export function usePostHogTracking(
     if (interactionCountRef.current <= 1) return
     if (interactionTimerRef.current) clearTimeout(interactionTimerRef.current)
     interactionTimerRef.current = setTimeout(() => {
-      const field = 'field' in action ? String(action.field) : action.type
+      const field = action.type === 'UPDATE_SOURCE' && action.field === 'type'
+        ? 'source_type'
+        : 'field' in action ? String(action.field) : action.type
       posthog?.capture('calculator_interaction', {
         active_tab: state.activeTab,
         input_field: field,
