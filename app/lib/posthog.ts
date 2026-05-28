@@ -4,7 +4,7 @@ import posthog from 'posthog-js'
 
 const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
 
-const enabled = process.env.NEXT_PUBLIC_POSTHOG_ENABLED === 'true'
+const enabled = process.env.NEXT_PUBLIC_POSTHOG_ENABLED !== 'false'
 
 if (typeof window !== 'undefined' && key && enabled) {
   posthog.init(key, {
