@@ -1,4 +1,3 @@
-/* ─── Brand tokens ─────────────────────────────────────────────────────────── */
 :root {
   --color-teal:         #0281AC;
   --color-dark:         #0A2543;
@@ -9,13 +8,13 @@
   --color-gray-light:   #EFF2F5;
   --color-yellow-light: #F6EFDC;
   --color-teal-light:   #E6F1F4;
-  --color-white:        #fff;
-  --color-warning:      #d97706;
-  --color-warning-bg:   #fffbeb;
-  --color-warning-text: #92400e;
-  --color-amber-text:   #92600a;
-  --color-error-light:  #fde8e8;
-  --color-error:        #c0392b;
+  --color-white:        #FFFFFF;
+  --color-warning:      #D97706;
+  --color-warning-bg:   #FFFBEB;
+  --color-warning-text: #92400E;
+  --color-amber-text:   #92600A;
+  --color-error-light:  #FDE8E8;
+  --color-error:        #C0392B;
 
   --font-heading: var(--loaded-prata, 'Georgia', serif);
   --font-body:    var(--loaded-inter, 'system-ui', sans-serif);
@@ -26,7 +25,6 @@
   --max-w:     860px;
 }
 
-/* ─── Reset ────────────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body { height: 100%; }
@@ -48,7 +46,6 @@ a:hover { text-decoration: underline; }
 button { font-family: var(--font-body); cursor: pointer; border: none; background: none; }
 input, select { font-family: var(--font-body); font-size: 15px; }
 
-/* ─── Site header ───────────────────────────────────────────────────────────── */
 .site-header {
   position: sticky;
   top: 0;
@@ -64,7 +61,6 @@ input, select { font-family: var(--font-body); font-size: 15px; }
 .site-header__logo-link { display: flex; align-items: center; }
 .site-header__logo { height: 32px; width: auto; }
 
-/* ─── Page layout ───────────────────────────────────────────────────────────── */
 .page-wrap {
   flex: 1;
   max-width: var(--max-w);
