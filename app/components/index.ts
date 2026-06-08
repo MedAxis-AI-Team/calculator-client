@@ -1,5 +1,6 @@
 export { default as CurrencyInput } from './CurrencyInput'
 export { default as CurrencySelector } from './CurrencySelector'
+export { default as NumericFormField } from './NumericFormField'
 export { default as PercentInput } from './PercentInput'
 export { default as ResultCard } from './ResultCard'
 export { default as Tabs } from './Tabs'

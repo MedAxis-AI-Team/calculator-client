@@ -8,6 +8,11 @@ const VALID_TYPES: FundingSourceType[] = [
   'rd_tax_credit', 'foundation_award', 'operating_revenue',
 ]
 
+/**
+ * Parses and validates a base64-encoded shared state string from the URL `model` param.
+ * Returns `null` if the payload is malformed, has an unknown version, or contains invalid enum values —
+ * the caller should fall back to default state.
+ */
 export function parseSharedState(raw: string): AppState | null {
   try {
     const s = JSON.parse(atob(raw)) as Record<string, unknown>
@@ -34,6 +39,7 @@ export function parseSharedState(raw: string): AppState | null {
   }
 }
 
+/** Serialises app state to a base64 string suitable for the URL `model` param. */
 export function encodeState(state: AppState): string {
   return btoa(JSON.stringify({ version: 1, ...state }))
 }
